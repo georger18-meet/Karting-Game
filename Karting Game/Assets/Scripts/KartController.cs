@@ -4,38 +4,101 @@ using UnityEngine;
 
 public class KartController : MonoBehaviour
 {
-    [SerializeField] private Vector2 moveInput;
+    [SerializeField] private Vector2 _moveInput;
 
-    [SerializeField] private Vector3 moveVect;
-    [SerializeField] private float MaxFwdSpeed = 4f;
-    [SerializeField] private float MaxReverseSpeed = 2f;
-    [SerializeField] private float AccelerationSpeed = 1f;
+    [SerializeField] private float _drivingSpeed;
+    [SerializeField] private float _maxFwdSpeed = 4f;
+    [SerializeField] private float _maxReverseSpeed = 2f;
+    [SerializeField] private float _accelerationSpeed = 0.01f;
+    [SerializeField] private float _decelerationSpeed = 0.01f;
+    [SerializeField] private int _steeringAngle = 15;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        moveInput.y = Input.GetAxisRaw("Vertical");
-        moveInput.x = Input.GetAxisRaw("Horizontal");
+        HandleMovement();
+    }
 
-        if (moveInput.y > 0)
+
+    // ----- Functions -----
+
+    private void HandleMovement()
+    {
+        Driving();
+        Steering();
+    }
+
+    private void Driving()
+    {
+        // Getting Input
+        _moveInput.y = Input.GetAxisRaw("Vertical");
+
+        // Accelerating
+        if (_moveInput.y > 0)
         {
-            moveVect.z = moveInput.y * MaxFwdSpeed;
+            if (_drivingSpeed >= _maxFwdSpeed)
+            {
+                _drivingSpeed = _maxFwdSpeed;
+            }
+            else
+            {
+                _drivingSpeed += _moveInput.y * _accelerationSpeed;
+            }
         }
-        else if (moveInput.y < 0)
+        // Decelerating
+        else if (_moveInput.y < 0)
         {
-            moveVect.z = moveInput.y * MaxReverseSpeed;
+            if (_drivingSpeed <= -_maxReverseSpeed)
+            {
+                _drivingSpeed = -_maxReverseSpeed;
+            }
+            else
+            {
+                _drivingSpeed += _moveInput.y * _decelerationSpeed;
+            }
         }
+        // Not Accelerating Nor Decelerating
         else
         {
-            moveVect.z = 0;
+            if (_drivingSpeed > 0.1f)
+            {
+                _drivingSpeed -= _decelerationSpeed;
+            }
+            else if (_drivingSpeed < -0.1f)
+            {
+                _drivingSpeed += _decelerationSpeed;
+            }
+            else
+            {
+                _drivingSpeed = 0;
+            }
         }
 
-        transform.Translate(moveVect * Time.fixedDeltaTime);
+        // Moving Transform
+        transform.Translate(0, 0, _drivingSpeed * Time.fixedDeltaTime);
+    }
+
+    private void Steering()
+    {
+        // Getting Input
+        _moveInput.x = Input.GetAxisRaw("Horizontal");
+
+        if (_moveInput.x != 0)
+        {
+            if (_drivingSpeed > 0)
+            {
+                transform.Rotate(0, _steeringAngle * _moveInput.x * Time.fixedDeltaTime, 0);
+            }
+            else if (_drivingSpeed < 0)
+            {
+                transform.Rotate(0, _steeringAngle * -_moveInput.x * Time.fixedDeltaTime, 0);
+            }
+        }
     }
 }
