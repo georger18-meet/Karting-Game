@@ -13,6 +13,8 @@ public class KartController : MonoBehaviour
     [SerializeField] private float _decelerationSpeed = 0.01f;
     [SerializeField] private int _steeringAngle = 15;
 
+    [SerializeField] private GameObject _steeringWheel, _wheelFR, _wheelFL, _wheelBR, _wheelBL;
+
     // Start is called before the first frame update
     void Start()
     {
