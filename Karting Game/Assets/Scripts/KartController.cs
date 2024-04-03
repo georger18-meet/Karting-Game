@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,6 +26,7 @@ public class KartController : MonoBehaviour
     void Update()
     {
         HandleMovement();
+        HandleAnimations();
     }
 
 
@@ -83,7 +85,7 @@ public class KartController : MonoBehaviour
         }
 
         // Moving Transform
-        transform.Translate(0, 0, _drivingSpeed * Time.fixedDeltaTime);
+        transform.Translate(0, 0, _drivingSpeed * Time.deltaTime);
     }
 
     private void Steering()
@@ -95,12 +97,25 @@ public class KartController : MonoBehaviour
         {
             if (_drivingSpeed > 0)
             {
-                transform.Rotate(0, _steeringAngle * _moveInput.x * Time.fixedDeltaTime, 0);
+                transform.Rotate(0, _steeringAngle * _moveInput.x * Time.deltaTime, 0);
             }
             else if (_drivingSpeed < 0)
             {
-                transform.Rotate(0, _steeringAngle * -_moveInput.x * Time.fixedDeltaTime, 0);
+                transform.Rotate(0, _steeringAngle * -_moveInput.x * Time.deltaTime, 0);
             }
         }
+    }
+
+    private void HandleAnimations()
+    {
+        // Driving
+        _wheelBR.transform.Rotate(_drivingSpeed / 2, 0, 0);
+        _wheelBL.transform.Rotate(_drivingSpeed / 2, 0, 0);        
+        
+        _wheelFR.transform.Rotate(_drivingSpeed / 2, 0, 0);
+        _wheelFL.transform.Rotate(_drivingSpeed / 2, 0, 0);
+
+        // Steering
+        _steeringWheel.transform.localRotation = Quaternion.Euler(0, 0, _steeringAngle * -_moveInput.x);
     }
 }
