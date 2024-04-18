@@ -311,6 +311,15 @@ MonoBehaviour:
   _wheelFL: {fileID: 6545186601641541870}
   _wheelBR: {fileID: 1955942837684325078}
   _wheelBL: {fileID: 3763490642614212146}
+  _groundMask:
+    serializedVersion: 2
+    m_Bits: 8
+  _gravityModifier: 10
+  _sphereRadius: 0.1
+  _sphereOffset: {x: 0, y: 0.09, z: 0}
+  _velocity: {x: 0, y: 0, z: 0}
+  _isGrounded: 0
+  _gravityEnabled: 1
 --- !u!1001 &3094854812574776130
 PrefabInstance:
   m_ObjectHideFlags: 0
