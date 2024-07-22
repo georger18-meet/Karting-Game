@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -39,6 +40,8 @@ public class CarController : MonoBehaviour
     [SerializeField] private float _steerStrength = 30f;
     [SerializeField] private AnimationCurve _turningCurve;
     [SerializeField] private float _dragCoefficient = 10f;
+    [SerializeField] private float _brakingDeceleration = 100f;
+    [SerializeField] private float _brakingDragCoefficient = 0.5f;
 
     private Vector3 _currentCarLocalVelocity = Vector3.zero;
     private float _carVelocityRatio = 0;
@@ -99,12 +102,15 @@ public class CarController : MonoBehaviour
 
     private void Acceleration()
     {
-        _carRB.AddForceAtPosition(_acceleration * _moveInput * transform.forward, _accelerationPoint.position, ForceMode.Acceleration);
+        if (_currentCarLocalVelocity.z < _maxSpeed)
+        {
+            _carRB.AddForceAtPosition(_acceleration * _moveInput * transform.forward, _accelerationPoint.position, ForceMode.Acceleration);
+        }
     }
 
     private void Deceleration()
     {
-        _carRB.AddForceAtPosition(_deceleration * _moveInput * -transform.forward, _accelerationPoint.position, ForceMode.Acceleration);
+        _carRB.AddForceAtPosition((Input.GetKey(KeyCode.Space) ? _brakingDeceleration : _deceleration) * Mathf.Abs(_carVelocityRatio) * -transform.forward, _accelerationPoint.position, ForceMode.Acceleration);
     }
 
     private void Turn()
@@ -115,7 +121,7 @@ public class CarController : MonoBehaviour
     {
         float currentSidewaySpeed = _currentCarLocalVelocity.x;
 
-        float dragMagnitude = -currentSidewaySpeed * _dragCoefficient;
+        float dragMagnitude = -currentSidewaySpeed * (Input.GetKey(KeyCode.Space) ? _brakingDragCoefficient : _dragCoefficient);
 
         Vector3 dragForce = transform.right * dragMagnitude;
 
@@ -153,7 +159,7 @@ public class CarController : MonoBehaviour
 
     private void VFX()
     {
-        if (_isGrounded && Mathf.Abs(_currentCarLocalVelocity.x) > _minSideSkidVelocity)
+        if (_isGrounded && Mathf.Abs(_currentCarLocalVelocity.x) > _minSideSkidVelocity && _carVelocityRatio > 0)
         {
             ToggleSkidMarks(true);
             ToggleSkidSmokes(true);
