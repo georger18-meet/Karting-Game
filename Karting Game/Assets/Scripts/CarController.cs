@@ -11,6 +11,8 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform[] _rayPoints;
     [SerializeField] private LayerMask _groundMask;
     [SerializeField] private Transform _accelerationPoint;
+    [SerializeField] private GameObject[] _tires = new GameObject[4];
+    [SerializeField] private GameObject[] _frontTireParent = new GameObject[2];
 
     [Header("Suspension")]
     [SerializeField] private float _springStiffness;
@@ -38,6 +40,9 @@ public class CarController : MonoBehaviour
     private Vector3 _currentCarLocalVelocity = Vector3.zero;
     private float _carVelocityRatio = 0;
 
+    [Header("Visuals")]
+    [SerializeField] private float _tireRotSpeed = 3000f;
+    [SerializeField] private float _maxSteerAngle = 30f;
 
     #region Unity Functions
 
@@ -47,6 +52,7 @@ public class CarController : MonoBehaviour
         GroundCheck();
         CalculateCarVelocity();
         Movement();
+        Visuals();
     }
 
     private void Update()
@@ -91,7 +97,40 @@ public class CarController : MonoBehaviour
 
         Vector3 dragForce = transform.right * dragMagnitude;
 
-        _carRB.AddForceAtPosition(dragForce,_carRB.worldCenterOfMass, ForceMode.Acceleration);
+        _carRB.AddForceAtPosition(dragForce, _carRB.worldCenterOfMass, ForceMode.Acceleration);
+    }
+
+    #endregion
+
+    #region Visuals
+
+    private void Visuals()
+    {
+        TireVisuals();
+    }
+
+    private void TireVisuals()
+    {
+        float steeringAngle = _maxSteerAngle * _steerInput;
+
+        for (int i = 0; i < _tires.Length; i++)
+        {
+            if (i < 2)
+            {
+                _tires[i].transform.Rotate(Vector3.right, _tireRotSpeed * _carVelocityRatio * Time.deltaTime, Space.Self);
+
+                _frontTireParent[i].transform.localEulerAngles = new Vector3(_frontTireParent[i].transform.localEulerAngles.x, steeringAngle, _frontTireParent[i].transform.localEulerAngles.z);
+            }
+            else
+            {
+                _tires[i].transform.Rotate(Vector3.right, _tireRotSpeed * _moveInput * Time.deltaTime, Space.Self);
+            }
+        }
+    }
+
+    private void SetTirePosition(GameObject tire, Vector3 targetPosition)
+    {
+        tire.transform.position = targetPosition;
     }
 
     #endregion
@@ -151,6 +190,7 @@ public class CarController : MonoBehaviour
                 float currentSpringLength = hit.distance - _wheelRadius;
                 float springCompression = (_restLength - currentSpringLength) / _springTravel;
 
+                // Calculate damper force (proporsional to the velocity of suspension compression)
                 float springVelocity = Vector3.Dot(_carRB.GetPointVelocity(_rayPoints[i].position), _rayPoints[i].up);
                 float dampForce = _damperStiffness * springVelocity;
 
@@ -160,11 +200,17 @@ public class CarController : MonoBehaviour
 
                 _carRB.AddForceAtPosition(netForce * _rayPoints[i].up, _rayPoints[i].position);
 
+                // Visuals
+                SetTirePosition(_tires[i], hit.point + _rayPoints[i].up * _wheelRadius);
+
                 Debug.DrawLine(_rayPoints[i].position, hit.point, Color.green);
             }
             else
             {
                 _wheelIsGrounded[i] = 0;
+
+                // Visuals
+                SetTirePosition(_tires[i], _rayPoints[i].position - _rayPoints[i].up * maxLength);
 
                 Debug.DrawLine(_rayPoints[i].position, _rayPoints[i].position + (_wheelRadius + maxLength) * -_rayPoints[i].up, Color.red);
             }
