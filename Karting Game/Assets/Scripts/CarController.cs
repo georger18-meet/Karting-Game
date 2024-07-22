@@ -13,6 +13,10 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform _accelerationPoint;
     [SerializeField] private GameObject[] _tires = new GameObject[4];
     [SerializeField] private GameObject[] _frontTireParent = new GameObject[2];
+    [SerializeField] private TrailRenderer[] _skidMarks = new TrailRenderer[2];
+    [SerializeField] private ParticleSystem[] _skidSmokes = new ParticleSystem[2];
+    [SerializeField] private AudioSource _engineSFX, _skidSFX;
+
 
     [Header("Suspension")]
     [SerializeField] private float _springStiffness;
@@ -36,13 +40,20 @@ public class CarController : MonoBehaviour
     [SerializeField] private AnimationCurve _turningCurve;
     [SerializeField] private float _dragCoefficient = 10f;
 
-
     private Vector3 _currentCarLocalVelocity = Vector3.zero;
     private float _carVelocityRatio = 0;
 
     [Header("Visuals")]
     [SerializeField] private float _tireRotSpeed = 3000f;
     [SerializeField] private float _maxSteerAngle = 30f;
+    [SerializeField] private float _minSideSkidVelocity = 1.2f;
+
+    [Header("Audio")]
+    [Range(0, 1)]
+    [SerializeField] private float _minEnginePitch = 1f;
+    [Range(1, 5)]
+    [SerializeField] private float _maxEnginePitch = 5f;
+
 
     #region Unity Functions
 
@@ -53,11 +64,22 @@ public class CarController : MonoBehaviour
         CalculateCarVelocity();
         Movement();
         Visuals();
+        EngineSound();
     }
 
     private void Update()
     {
         GetPlayerInput();
+    }
+
+    #endregion
+
+    #region Input Handling
+
+    private void GetPlayerInput()
+    {
+        _moveInput = Input.GetAxis("Vertical");
+        _steerInput = Input.GetAxis("Horizontal");
     }
 
     #endregion
@@ -107,6 +129,7 @@ public class CarController : MonoBehaviour
     private void Visuals()
     {
         TireVisuals();
+        VFX();
     }
 
     private void TireVisuals()
@@ -128,9 +151,62 @@ public class CarController : MonoBehaviour
         }
     }
 
+    private void VFX()
+    {
+        if (_isGrounded && Mathf.Abs(_currentCarLocalVelocity.x) > _minSideSkidVelocity)
+        {
+            ToggleSkidMarks(true);
+            ToggleSkidSmokes(true);
+            ToggleSkidSound(true);
+        }
+        else
+        {
+            ToggleSkidMarks(false);
+            ToggleSkidSmokes(false);
+            ToggleSkidSound(false);
+        }
+    }
+
+    private void ToggleSkidMarks(bool toggle)
+    {
+        foreach (var skidMark in _skidMarks)
+        {
+            skidMark.emitting = toggle;
+        }
+    }
+
+    private void ToggleSkidSmokes(bool toggle)
+    {
+        foreach (var skidSmoke in _skidSmokes)
+        {
+            if (toggle)
+            {
+                skidSmoke.Play();
+            }
+            else
+            {
+                skidSmoke.Stop();
+            }
+        }
+    }
+
     private void SetTirePosition(GameObject tire, Vector3 targetPosition)
     {
         tire.transform.position = targetPosition;
+    }
+
+    #endregion
+
+    #region Audio
+
+    private void EngineSound()
+    {
+        _engineSFX.pitch = Mathf.Lerp(_minEnginePitch, _maxEnginePitch, Mathf.Abs(_carVelocityRatio));
+    }
+
+    private void ToggleSkidSound(bool toggle)
+    {
+        _skidSFX.mute = !toggle;
     }
 
     #endregion
@@ -160,16 +236,6 @@ public class CarController : MonoBehaviour
     {
         _currentCarLocalVelocity = transform.InverseTransformDirection(_carRB.velocity);
         _carVelocityRatio = _currentCarLocalVelocity.z / _maxSpeed;
-    }
-
-    #endregion
-
-    #region Input Handling
-
-    private void GetPlayerInput()
-    {
-        _moveInput = Input.GetAxis("Vertical");
-        _steerInput = Input.GetAxis("Horizontal");
     }
 
     #endregion
