@@ -371,8 +371,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2905289443471511391}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.17478697, y: 0.37484446, z: -0.07218844, w: 0.90759575}
-  m_LocalPosition: {x: -1.7641242, y: 1, z: -1.7714022}
+  m_LocalRotation: {x: 0.17475781, y: 0.37521094, z: -0.072259024, w: 0.9074443}
+  m_LocalPosition: {x: -1.7655542, y: 1, z: -1.7699769}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -549,12 +549,12 @@ MonoBehaviour:
   m_RequiresColorTexture: 0
   m_Version: 2
   m_TaaSettings:
-    quality: 3
-    frameInfluence: 0.1
-    jitterScale: 1
-    mipBias: 0
-    varianceClampScale: 0.9
-    contrastAdaptiveSharpening: 0
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
 --- !u!1 &3325897292294273043
 GameObject:
   m_ObjectHideFlags: 0
@@ -1433,9 +1433,9 @@ MonoBehaviour:
   _restLength: 0.3
   _springTravel: 0.1
   _wheelRadius: 0.125
-  _acceleration: 10
+  _acceleration: 5
   _deceleration: 5
-  _maxSpeed: 50
+  _maxSpeed: 25
   _steerStrength: 45
   _turningCurve:
     serializedVersion: 2
@@ -1462,7 +1462,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _dragCoefficient: 10
-  _brakingDeceleration: 20
+  _brakingDeceleration: 10
   _brakingDragCoefficient: 0.5
   _tireRotSpeed: 3000
   _maxSteerAngle: 30
